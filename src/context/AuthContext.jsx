@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import axios from "../utils/axios"; // use centralized axios instance
+import axios from "../utils/axios";
 
 const AuthContext = createContext();
 
@@ -8,14 +8,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${parsedUser.token}`;
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
@@ -25,7 +20,6 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.post("/users", { name, email, password });
       setUser(data);
       localStorage.setItem("user", JSON.stringify(data));
-      axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
       return { success: true };
     } catch (error) {
       return {
@@ -40,7 +34,6 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.post("/users/login", { email, password });
       setUser(data);
       localStorage.setItem("user", JSON.stringify(data));
-      axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
       return { success: true };
     } catch (error) {
       return {
@@ -53,7 +46,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    delete axios.defaults.headers.common["Authorization"];
   };
 
   const updateProfile = async (userData) => {
