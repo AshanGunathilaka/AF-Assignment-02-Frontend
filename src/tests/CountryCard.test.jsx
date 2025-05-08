@@ -16,49 +16,49 @@ describe("CountryCard Component", () => {
     languages: { eng: "English", spa: "Spanish" },
   };
 
-  it("renders country card with correct information", () => {
+  const renderCard = () =>
     render(
       <BrowserRouter>
-        <CountryCard country={mockCountry} />
+        <CountryCard country={mockCountry} index={0} />
       </BrowserRouter>
     );
 
-    // Test for the country name
-    expect(screen.getByText(/United States of America/i)).toBeInTheDocument();
-
-    // Test for the capital
+  it("renders country name", () => {
+    renderCard();
     expect(
-      screen.getByText(
-        (_, el) => el.textContent === "Capital: Washington, D.C."
-      )
-    ).toBeInTheDocument();
-
-    // Test for the population
-    expect(
-      screen.getByText((_, el) => el.textContent === "Population: 331,002,651")
-    ).toBeInTheDocument();
-
-    // Test for the region
-    expect(
-      screen.getByText((_, el) => el.textContent === "Region: Americas")
-    ).toBeInTheDocument();
-
-    // Test for the languages
-    expect(
-      screen.getByText(
-        (_, el) => el.textContent === "Languages: English, Spanish"
-      )
+      screen.getByRole("heading", { name: /United States of America/i })
     ).toBeInTheDocument();
   });
 
-  it("links to the correct country page", () => {
-    render(
-      <BrowserRouter>
-        <CountryCard country={mockCountry} />
-      </BrowserRouter>
-    );
+  it("renders capital, population, region, and languages", () => {
+    renderCard();
 
+    // Use `getByText` with the value only, since labels are separate elements
+    expect(screen.getByText("Washington, D.C.")).toBeInTheDocument();
+    expect(screen.getByText("331,002,651")).toBeInTheDocument();
+    expect(screen.getByText("Americas")).toBeInTheDocument();
+    expect(screen.getByText("English, Spanish")).toBeInTheDocument();
+  });
+
+  it("renders all info block labels", () => {
+    renderCard();
+
+    expect(screen.getByText("Population")).toBeInTheDocument();
+    expect(screen.getByText("Region")).toBeInTheDocument();
+    expect(screen.getByText("Capital")).toBeInTheDocument();
+    expect(screen.getByText("Languages")).toBeInTheDocument();
+  });
+
+  it("links to the correct country page", () => {
+    renderCard();
     const countryLink = screen.getByRole("link");
     expect(countryLink).toHaveAttribute("href", "/country/USA");
+  });
+
+  it("renders the flag image", () => {
+    renderCard();
+    const flag = screen.getByRole("img");
+    expect(flag).toHaveAttribute("src", "https://flagcdn.com/us.svg");
+    expect(flag).toHaveAttribute("alt", "United States of America");
   });
 });

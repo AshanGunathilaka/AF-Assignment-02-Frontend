@@ -10,6 +10,7 @@ function LoadingSpinner({ size = "medium" }) {
   return (
     <div className="flex justify-center items-center">
       <div
+        data-testid="loading-spinner" // This is the correct way to add the comment.
         className={`animate-spin rounded-full border-t-transparent ${sizes[size]} border-blue-500`}
       ></div>
     </div>

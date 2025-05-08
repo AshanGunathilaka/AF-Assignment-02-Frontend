@@ -53,7 +53,6 @@ function Home() {
         updateLanguageOptions(data);
       } catch (err) {
         setError(err.message);
-        console.error("Error fetching countries:", err);
       } finally {
         setIsLoading(false);
       }

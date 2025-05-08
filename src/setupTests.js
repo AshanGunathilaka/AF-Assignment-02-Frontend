@@ -1,10 +1,21 @@
-import "@testing-library/jest-dom"; // Allows using jest-dom matchers
-import { TextEncoder, TextDecoder } from "util";
-import fetchMock from "jest-fetch-mock"; // <-- Import fetch mock
+// src/setupTests.js
 
-// Polyfill for TextEncoder and TextDecoder
+// Extend Jest with additional matchers from jest-dom
+import "@testing-library/jest-dom";
+
+// Polyfill TextEncoder/TextDecoder for Node
+import { TextEncoder, TextDecoder } from "util";
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
-// Enable fetch mocks globally
-fetchMock.enableMocks(); // <-- Add this line
+// Mock fetch
+import fetchMock from "jest-fetch-mock";
+fetchMock.enableMocks();
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class {
+  constructor() {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

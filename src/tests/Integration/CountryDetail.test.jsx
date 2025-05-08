@@ -2,13 +2,16 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import CountryDetail from "../../pages/CountryDetail";
+import { AuthProvider } from "../../context/AuthContext";
 
-// Reset fetch mocks before each test
+// Use fetchMock from jest-fetch-mock
+import fetchMock from "jest-fetch-mock";
+
 beforeEach(() => {
-  fetch.resetMocks();
+  fetchMock.resetMocks();
 });
 
-test("fetches and displays country details", async () => {
+test("fetches and displays country details and neighbors", async () => {
   const mockCountry = {
     name: { common: "India", official: "Republic of India" },
     capital: ["New Delhi"],
@@ -24,43 +27,63 @@ test("fetches and displays country details", async () => {
     currencies: { INR: { name: "Indian Rupee", symbol: "₹" } },
     borders: ["PAK", "CHN"],
     coatOfArms: { svg: "https://example.com/coat.svg" },
+    cca3: "IND",
   };
 
-  fetch.mockResponseOnce(JSON.stringify([mockCountry]));
+  const mockNeighbors = [
+    {
+      name: { common: "Pakistan" },
+      cca3: "PAK",
+      flags: { svg: "https://flagcdn.com/pk.svg" },
+    },
+    {
+      name: { common: "China" },
+      cca3: "CHN",
+      flags: { svg: "https://flagcdn.com/cn.svg" },
+    },
+  ];
 
-  render(
-    <MemoryRouter initialEntries={["/country/IND"]}>
-      <Routes>
-        <Route path="/country/:code" element={<CountryDetail />} />
-      </Routes>
-    </MemoryRouter>
+  fetchMock.mockResponses(
+    [JSON.stringify([mockCountry]), { status: 200 }],
+    [JSON.stringify(mockNeighbors), { status: 200 }]
   );
 
-  // Optionally check for loading spinner if you add data-testid in your component
-  // expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+  render(
+    <AuthProvider>
+      <MemoryRouter initialEntries={["/country/IND"]}>
+        <Routes>
+          <Route path="/country/:code" element={<CountryDetail />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>
+  );
 
   await waitFor(() => screen.getByText("India"));
 
   expect(screen.getByText("India")).toBeInTheDocument();
   expect(screen.getByText("New Delhi")).toBeInTheDocument();
   expect(screen.getByAltText("India flag")).toBeInTheDocument();
+
+  expect(screen.getByText("Pakistan")).toBeInTheDocument();
+  expect(screen.getByText("China")).toBeInTheDocument();
+  expect(screen.getByAltText("Pakistan flag")).toBeInTheDocument();
+  expect(screen.getByAltText("China flag")).toBeInTheDocument();
 });
 
 test("shows an error message when fetch fails", async () => {
-  fetch.mockReject(() => Promise.reject("API is down"));
+  fetchMock.mockReject(new Error("Failed to fetch country data"));
 
   render(
-    <MemoryRouter initialEntries={["/country/IND"]}>
-      <Routes>
-        <Route path="/country/:code" element={<CountryDetail />} />
-      </Routes>
-    </MemoryRouter>
+    <AuthProvider>
+      <MemoryRouter initialEntries={["/country/IND"]}>
+        <Routes>
+          <Route path="/country/:code" element={<CountryDetail />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>
   );
 
-  // Wait for the error message to appear
-  await waitFor(() => screen.getByText(/Failed to fetch country data/i), {
-    timeout: 5000,
-  });
+  await waitFor(() => screen.getByText(/Failed to fetch country data/i));
 
   expect(screen.getByText(/Failed to fetch country data/i)).toBeInTheDocument();
 });

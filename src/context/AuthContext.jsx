@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import axios from "axios";
+import axios from "../utils/axios"; // use centralized axios instance
 
 const AuthContext = createContext();
 
@@ -11,24 +11,21 @@ export const AuthProvider = ({ children }) => {
     // Check if user is already logged in
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${parsedUser.token}`;
     }
     setLoading(false);
   }, []);
-
-  axios.defaults.baseURL = "http://localhost:5000/api";
-  axios.defaults.withCredentials = true;
-
-  // Add token to requests if user is logged in
-  if (user) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${user.token}`;
-  }
 
   const register = async (name, email, password) => {
     try {
       const { data } = await axios.post("/users", { name, email, password });
       setUser(data);
       localStorage.setItem("user", JSON.stringify(data));
+      axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
       return { success: true };
     } catch (error) {
       return {
@@ -43,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.post("/users/login", { email, password });
       setUser(data);
       localStorage.setItem("user", JSON.stringify(data));
+      axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
       return { success: true };
     } catch (error) {
       return {
@@ -90,8 +88,8 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  const context = React.useContext(AuthContext);
-  if (context === undefined) {
+  const context = useContext(AuthContext);
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
