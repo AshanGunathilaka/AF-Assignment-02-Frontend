@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Add a country to favorites
 export const addToFavorites = async (country) => {
@@ -8,11 +8,11 @@ export const addToFavorites = async (country) => {
       countryName: country.name.common,
       flagUrl: country.flags.svg,
     };
-    
-    const response = await axios.post('/favorites', favoriteData);
+
+    const response = await axios.post("/favorites", favoriteData);
     return response.data;
   } catch (error) {
-    console.error('Error adding to favorites:', error);
+    console.error("Error adding to favorites:", error);
     throw error;
   }
 };
@@ -20,10 +20,10 @@ export const addToFavorites = async (country) => {
 // Get all favorite countries
 export const getFavorites = async () => {
   try {
-    const response = await axios.get('/favorites');
+    const response = await axios.get("/favorites");
     return response.data;
   } catch (error) {
-    console.error('Error fetching favorites:', error);
+    console.error("Error fetching favorites:", error);
     throw error;
   }
 };
@@ -34,7 +34,7 @@ export const removeFromFavorites = async (countryCode) => {
     const response = await axios.delete(`/favorites/${countryCode}`);
     return response.data;
   } catch (error) {
-    console.error('Error removing from favorites:', error);
+    console.error("Error removing from favorites:", error);
     throw error;
   }
 };
@@ -45,7 +45,7 @@ export const checkFavorite = async (countryCode) => {
     const response = await axios.get(`/favorites/${countryCode}`);
     return response.data.isFavorite;
   } catch (error) {
-    console.error('Error checking favorite status:', error);
+    console.error("Error checking favorite status:", error);
     return false;
   }
 };

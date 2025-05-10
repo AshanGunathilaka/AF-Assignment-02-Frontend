@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import axios from "../utils/axios";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -8,12 +8,21 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if user is already logged in
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
+
+  axios.defaults.baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+  axios.defaults.withCredentials = true;
+
+  // Add token to requests if user is logged in
+  if (user) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${user.token}`;
+  }
 
   const register = async (name, email, password) => {
     try {
@@ -46,6 +55,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    delete axios.defaults.headers.common["Authorization"];
   };
 
   const updateProfile = async (userData) => {
@@ -80,8 +90,8 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
+  const context = React.useContext(AuthContext);
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
